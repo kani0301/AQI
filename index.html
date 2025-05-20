@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Air Quality Prediction Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0; padding: 0;
+        }
+        #map {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            height: 100%; width: 100%;
+            z-index: 1;
+        }
+        .container {
+            position: fixed;
+            top: 20px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        input[type="text"], input[type="submit"] {
+            padding: 10px;
+            margin: 10px 5px 0 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: calc(100% - 24px);
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        input[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        h1, h3 {
+            margin: 0 0 15px 0;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+```
+<div id="map"></div>
+
+<div class="container">
+    <h1>Air Quality Prediction</h1>
+    <form action="/predict" method="post">
+        <input type="text" name="city" placeholder="Enter city name" value="{{ city or '' }}" required>
+        <input type="submit" value="Predict AQI">
+    </form>
+
+    {% if prediction_text %}
+        <h3 class="{{ 'error' if 'Error' in prediction_text or 'wrong' in prediction_text else '' }}">
+            {{ prediction_text }}
+        </h3>
+    {% endif %}
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if lat is defined and lon is defined %}
+            var lat = {{ lat }};
+            var lon = {{ lon }};
+            var city = "{{ city|e }}";
+            var aqiClass = "{{ aqi_class|e if aqi_class is defined else '' }}";
+            var predictionText = "{{ prediction_text|e if prediction_text is defined else '' }}";
+
+            var map = L.map('map').setView([lat, lon], 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup(`<b>${city}</b><br>${predictionText}`)
+                .openPopup();
+        {% else %}
+            // Default view if no location
+            var map = L.map('map').setView([20, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+        {% endif %}
+    });
+</script>
+```
+
+</body>
+</html> 
